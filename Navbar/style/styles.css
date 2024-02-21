@@ -199,6 +199,7 @@ a{
     font-weight: 700;
     font-size: 2rem;
     align-content: center;
+    background: transparent;
 }
 
 .logo img {
