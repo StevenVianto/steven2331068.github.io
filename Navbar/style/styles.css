@@ -63,7 +63,7 @@ a{
 }
 
 /* button */
-.btn{
+/* .btn{
     padding: 1rem 1.5rem ;
     background: white;
     border:1.5px solid  var(--borderColor);
@@ -75,20 +75,21 @@ a{
     box-shadow: rgba(0, 0, 0, 0.5 ) 0px 3px 5px ;
     background-color: var(--primaryIconColor);
     color: white;
-}
+} */
 
-/* .navbar a .btn{
+.navbar a .btn{
+    font-family: "Roboto", sans-serif; 
     position: relative;
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 150px;
+    width: 100px;
     height: 100%;
-    background: rgb(68, 0, 47);
-    border: 2px solid rgb(68, 0, 47);
+    background: var(--secondaryBackgroundColor);
+    border: 2px solid var(--primaryIconColor);
     border-radius: 8px;
     font-size: 19px;
-    color: #dfd2dd;
+    color: var(--primaryTextColor);
     text-decoration: none;
     font-weight: 600;
     letter-spacing: 1px;
@@ -98,14 +99,51 @@ a{
 }
 
 .navbar a .btn :hover {
-    color: rgb(68, 0, 47);
+    color:var(--primaryIconColor);
 }
 
 
-.btn-box a:nth-child(2) {
+.navbar a .btn:nth-child(2) {
     background: transparent;
-    color: rgb(68, 0, 47);
-} */
+    color: var(--primaryIconColor);
+}
+
+.navbar a .btn:nth-child(2) {
+    background: transparent;
+    color: var(--primaryIconColor);
+}
+
+.navbar a .btn:nth-child(2):hover{
+    color: #dfd2dd;
+}
+
+.navbar a .btn:nth-child(2)::before{
+    background: var(--primaryIconColor);
+}
+.navbar a .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: var(--primaryIconColor);
+    z-index: -1;
+    transition: 0.5s;
+}
+
+.navbar a .btn:hover::before {
+   width: 100%;
+}
+
+
+
+
+
+
+
+
+*/
 
 
 
@@ -242,6 +280,7 @@ nav ul li a{
     width:100%
     
 }
+
 
 
 
