@@ -322,6 +322,8 @@ nav ul li a{
     margin-top: 12rem;
     overflow: none;
     cursor: pointer;
+
+
 }
 
 
@@ -329,7 +331,9 @@ nav ul li a{
     display: flex;
     justify-content: center;
     width:340px;
+    height: 455px;
     margin-left: 300px;
+    margin-bottom: 100px;
     border-radius: 5%  ;
     filter: grayscale(.4);
     transition: .3s;

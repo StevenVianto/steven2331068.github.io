@@ -84,9 +84,10 @@
         order: -1;
     }
     .hero-right img{
-        width: 65%;
+        width: 80%;
         margin-left: auto;
         margin-right: auto;
+        margin-bottom: -45px;
     }
     .hero-left{
         text-align: center;
