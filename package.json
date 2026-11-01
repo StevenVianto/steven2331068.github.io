@@ -1,0 +1,29 @@
+{
+  "name": "steven-valiant-portfolio",
+  "type": "module",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Personal portfolio of Steven Valiant V. — Mobile, Full-Stack Web & Game Developer. Built with Astro + React islands and a WebGL hero.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/react": "^7.1.2",
+    "@react-three/fiber": "^9.8.2",
+    "astro": "^7.4.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
+    "@types/three": "^0.187.0",
+    "typescript": "^5.9.3"
+  }
+}

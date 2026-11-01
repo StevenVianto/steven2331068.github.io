@@ -1,0 +1,96 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = `${site.name} — ${site.title}`,
+  description = site.description,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    <meta name="keywords" content={site.keywords} />
+    <link rel="canonical" href={canonical} />
+
+    <meta name="theme-color" content="#06080e" />
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+    <link rel="apple-touch-icon" href="/images/logo.png" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={`${site.url}/images/valiant.jpg`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${site.url}/images/valiant.jpg`} />
+
+    <!-- Fonts: preconnect first so the CSS request does not pay a second DNS hop -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: site.name,
+      jobTitle: site.title,
+      url: site.url,
+      image: `${site.url}/images/valiant.jpg`,
+      email: `mailto:${site.email}`,
+      telephone: site.phoneRaw,
+      address: { '@type': 'PostalAddress', addressLocality: 'Batam City', addressCountry: 'ID' },
+      sameAs: [
+        'https://github.com/StevenVianto',
+        'https://www.linkedin.com/in/steven-valiant-vianto-551b50288',
+        'https://www.instagram.com/stevenvianto/',
+      ],
+      alumniOf: {
+        '@type': 'CollegeOrUniversity',
+        name: 'Universitas Internasional Batam',
+      },
+      knowsAbout: ['Flutter', 'React', 'Laravel', 'C#', 'Python', 'Game Development'],
+    })} />
+  </head>
+
+  <body>
+    <!-- Fixed background stack: mesh wash, perspective grid, grain, light orbs -->
+    <div class="bg-stack" aria-hidden="true">
+      <div class="bg-mesh"></div>
+      <div class="bg-grid"></div>
+      <div class="bg-noise"></div>
+      <div class="bg-orb bg-orb--1"></div>
+      <div class="bg-orb bg-orb--2"></div>
+      <div class="bg-orb bg-orb--3"></div>
+    </div>
+
+    <!-- Scroll progress hairline -->
+    <div class="scroll-progress" aria-hidden="true"><span id="scrollBar"></span></div>
+
+    <div class="page">
+      <slot />
+    </div>
+  </body>
+</html>

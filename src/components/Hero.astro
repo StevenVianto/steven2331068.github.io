@@ -1,0 +1,744 @@
+---
+import Icon from './Icon.astro';
+import HeroScene from './three/HeroScene.tsx';
+import { site, roles, socials, stats, heroBadges } from '../data/site';
+---
+
+<section class="hero" id="hero">
+  <!-- WebGL field. client:visible → three.js is fetched only once this scrolls
+       into view, and it never blocks first paint or the LCP portrait. -->
+  <div class="hero-canvas" aria-hidden="true">
+    <HeroScene client:visible />
+  </div>
+
+  <div class="container hero-grid">
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Copy column                                                       -->
+    <!-- ---------------------------------------------------------------- -->
+    <div class="hero-copy">
+      <p class="hero-eyebrow reveal">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        {site.status}
+      </p>
+
+      <h1 class="hero-title reveal" style="--reveal-delay:80ms">
+        <span class="hero-greeting">{site.tagline}</span>
+        <span class="grad-text">{site.displayName}</span>
+      </h1>
+
+      <p class="hero-role reveal" style="--reveal-delay:160ms">
+        <span class="hero-role-label">Specialized in</span>
+        <span class="hero-role-value">
+          <span id="dynamicRole" data-roles={JSON.stringify(roles)}>{roles[0]}</span>
+          <span class="caret" aria-hidden="true"></span>
+        </span>
+      </p>
+
+      <p class="hero-desc reveal" style="--reveal-delay:220ms">{site.heroDescription}</p>
+
+      <div class="hero-cta reveal" style="--reveal-delay:280ms">
+        <a class="btn btn-primary" href="#projects">
+          View My Work
+          <Icon name="arrowRight" size={18} />
+        </a>
+        <a class="btn btn-secondary" href={site.resumeUrl} download>
+          <Icon name="download" size={18} />
+          Download Resume
+        </a>
+      </div>
+
+      <div class="hero-social reveal" style="--reveal-delay:340ms">
+        <span class="hero-social-label">Find me on</span>
+        <ul class="hero-social-list">
+          {socials.map((s) => (
+            <li>
+              <a
+                class="social-btn"
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+              >
+                <Icon name={s.icon as any} size={18} />
+              </a>
+            </li>
+          ))}
+        </ul>
+        <span class="hero-social-rule" aria-hidden="true"></span>
+        <span class="hero-social-note">Batam City, Indonesia</span>
+      </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Portrait column                                                   -->
+    <!-- ---------------------------------------------------------------- -->
+    <div class="hero-visual reveal" style="--reveal-delay:200ms">
+      <div class="portrait-stage" data-tilt data-tilt-max="7">
+        <!-- Concentric rings behind the portrait -->
+        <div class="orbit orbit--1" aria-hidden="true"></div>
+        <div class="orbit orbit--2" aria-hidden="true"></div>
+        <div class="orbit orbit--3" aria-hidden="true"></div>
+
+        <div class="portrait-frame">
+          <img
+            class="portrait-img"
+            src="/images/valiant.jpg"
+            alt="Portrait of Steven Valiant V."
+            width="520"
+            height="620"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
+          <div class="portrait-sheen" aria-hidden="true"></div>
+          <div class="portrait-floor" aria-hidden="true"></div>
+        </div>
+
+        {heroBadges.map((b) => (
+          <div class={`hero-badge hero-badge--${b.position}`} style={`--accent:${b.accent}`}>
+            <span class="hero-badge-icon"><Icon name={b.icon as any} size={18} /></span>
+            <span class="hero-badge-text">
+              <small>{b.eyebrow}</small>
+              <strong>{b.value}</strong>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------------------ -->
+  <!-- Stat ribbon                                                         -->
+  <!-- ------------------------------------------------------------------ -->
+  <div class="container">
+    <ul class="hero-stats reveal" style="--reveal-delay:420ms">
+      {stats.map((s) => (
+        <li class="stat">
+          <span class="stat-icon"><Icon name={s.icon as any} size={19} /></span>
+          <span class="stat-body">
+            <strong>{s.value}</strong>
+            <small>{s.label}</small>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <a class="hero-scroll" href="#experience" aria-label="Scroll to experience">
+    <span class="hero-scroll-line" aria-hidden="true"></span>
+    <span class="hero-scroll-text">scroll</span>
+  </a>
+</section>
+
+<script>
+  import { reveal, tilt } from '../scripts/motion.ts';
+
+  // Typewriter over the role list.
+  const target = document.getElementById('dynamicRole');
+  if (target) {
+    const roles: string[] = JSON.parse(target.dataset.roles ?? '[]');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!reduced && roles.length > 1) {
+      let roleIndex = 0;
+      let charIndex = 0;
+      let deleting = false;
+
+      const tick = () => {
+        // Bail out if the node was swapped (e.g. a client-side nav).
+        if (!target.isConnected) return;
+
+        const current = roles[roleIndex];
+        charIndex += deleting ? -1 : 1;
+        target.textContent = current.slice(0, charIndex);
+
+        let delay = deleting ? 38 : 62;
+
+        if (!deleting && charIndex === current.length) {
+          deleting = true;
+          delay = 2000; // hold the finished role
+        } else if (deleting && charIndex === 0) {
+          deleting = false;
+          roleIndex = (roleIndex + 1) % roles.length;
+          delay = 380;
+        }
+
+        window.setTimeout(tick, delay);
+      };
+
+      // Start after the intro animations settle.
+      window.setTimeout(tick, 1100);
+    }
+  }
+
+  reveal();
+  tilt();
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    padding-top: clamp(7.5rem, 15vh, 10rem);
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+    overflow: hidden;
+  }
+
+  /* The canvas fills the hero and fades out toward the bottom so it never
+     fights the content that follows. */
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.9;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  }
+
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4.5rem);
+  }
+
+  /* --- Eyebrow --- */
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.42rem 0.95rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--r-full);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    background: rgba(16, 185, 129, 0.08);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #6ee7b7;
+  }
+
+  .pulse-dot {
+    position: relative;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--emerald);
+    flex-shrink: 0;
+  }
+
+  .pulse-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid var(--emerald);
+    animation: pulse-ring 2.4s var(--ease-out) infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.7);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(2.1);
+      opacity: 0;
+    }
+  }
+
+  /* --- Title --- */
+  .hero-title {
+    font-size: clamp(2.5rem, 6.4vw, 5.1rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+    margin-bottom: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15em;
+  }
+
+  .hero-greeting {
+    font-size: 0.34em;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-family: var(--font-mono);
+  }
+
+  /* --- Role --- */
+  .hero-role {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    font-size: clamp(1rem, 1.7vw, 1.16rem);
+  }
+
+  .hero-role-label {
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .hero-role-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-weight: 700;
+    color: var(--cyan-light);
+  }
+
+  .caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-left: 3px;
+    background: var(--cyan-light);
+    animation: blink 1.05s steps(2, start) infinite;
+    translate: 0 0.14em;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* --- Description --- */
+  .hero-desc {
+    max-width: 58ch;
+    color: var(--muted);
+    font-size: clamp(0.96rem, 1.5vw, 1.05rem);
+    line-height: 1.75;
+    margin-bottom: 2rem;
+  }
+
+  /* --- CTAs --- */
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-bottom: 2.25rem;
+  }
+
+  /* --- Socials --- */
+  .hero-social {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+  }
+
+  .hero-social-label,
+  .hero-social-note {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .hero-social-list {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .social-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--glass);
+    color: var(--muted);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition:
+      color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out),
+      transform var(--t-base) var(--ease-spring),
+      box-shadow var(--t-base) var(--ease-out);
+  }
+
+  .social-btn:hover {
+    color: #fff;
+    border-color: var(--line-accent);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px -10px var(--primary-glow);
+  }
+
+  .hero-social-rule {
+    flex: 1;
+    min-width: 20px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--line-hi), transparent);
+  }
+
+  /* --- Portrait --- */
+  .hero-visual {
+    display: grid;
+    place-items: center;
+  }
+
+  .portrait-stage {
+    position: relative;
+    width: min(100%, 440px);
+    aspect-ratio: 1 / 1.08;
+    display: grid;
+    place-items: center;
+  }
+
+  /* Rings: three nested outlines rotating at different rates, which reads as
+     orbital depth without needing any JS. */
+  .orbit {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(129, 140, 248, 0.18);
+    pointer-events: none;
+  }
+
+  .orbit--1 {
+    inset: -2%;
+    border-style: dashed;
+    animation: spin 42s linear infinite;
+  }
+
+  .orbit--2 {
+    inset: 7%;
+    border-color: rgba(34, 211, 238, 0.16);
+    animation: spin 58s linear infinite reverse;
+  }
+
+  .orbit--3 {
+    inset: 16%;
+    border-color: rgba(168, 85, 247, 0.14);
+    animation: spin 34s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .portrait-frame {
+    position: relative;
+    width: 76%;
+    aspect-ratio: 0.86;
+    border-radius: 28px;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    border: 1px solid var(--line-hi);
+    background: var(--bg-2);
+    box-shadow:
+      var(--sh-4),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 0 90px -20px var(--primary-glow);
+  }
+
+  .portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 22%;
+    /* Push the subject back a touch so it sits inside the frame, not on it. */
+    transform: scale(1.04) translateZ(-20px);
+    transition: transform var(--t-slow) var(--ease-out);
+  }
+
+  .portrait-stage:hover .portrait-img {
+    transform: scale(1.08) translateZ(-20px);
+  }
+
+  /* Diagonal light sweep across the glass. */
+  .portrait-sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      128deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      transparent 34%,
+      transparent 62%,
+      rgba(99, 102, 241, 0.18) 100%
+    );
+  }
+
+  /* Fade the bottom of the photo into the card so it has no hard edge. */
+  .portrait-floor {
+    position: absolute;
+    inset: auto 0 0;
+    height: 42%;
+    background: linear-gradient(to top, rgba(6, 8, 14, 0.92), transparent);
+    pointer-events: none;
+  }
+
+  /* --- Floating badges --- */
+  .hero-badge {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--glass-strong);
+    backdrop-filter: blur(18px) saturate(1.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    box-shadow: var(--sh-3), inset 0 1px 0 var(--glass-hi);
+    transform: translateZ(60px);
+    animation: float 6s var(--ease-in-out) infinite;
+  }
+
+  .hero-badge--top-left {
+    top: 9%;
+    left: -4%;
+  }
+
+  .hero-badge--bottom-right {
+    bottom: 11%;
+    right: -5%;
+    animation-delay: -3s;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -9px;
+    }
+  }
+
+  .hero-badge-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+
+  .hero-badge-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  .hero-badge-text small {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .hero-badge-text strong {
+    font-size: 0.83rem;
+    font-weight: 700;
+  }
+
+  /* --- Stat ribbon --- */
+  .hero-stats {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: clamp(3rem, 7vw, 5rem);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+    background: var(--line-soft);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.15rem 1.3rem;
+    background: rgba(10, 13, 20, 0.72);
+    transition: background-color var(--t-base) var(--ease-out);
+  }
+
+  .stat:hover {
+    background: rgba(22, 30, 49, 0.85);
+  }
+
+  .stat-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    color: var(--primary-light);
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+
+  .stat-body {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 0;
+  }
+
+  .stat-body strong {
+    font-size: 1.22rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-body small {
+    font-size: 0.73rem;
+    color: var(--dim);
+    letter-spacing: 0.01em;
+  }
+
+  /* --- Scroll cue --- */
+  .hero-scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 1.1rem;
+    translate: -50% 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--faint);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+
+  .hero-scroll:hover {
+    color: var(--muted);
+  }
+
+  .hero-scroll-line {
+    width: 1px;
+    height: 34px;
+    background: linear-gradient(var(--primary-light), transparent);
+    animation: scroll-cue 2.2s var(--ease-in-out) infinite;
+    transform-origin: top;
+  }
+
+  @keyframes scroll-cue {
+    0% {
+      transform: scaleY(0);
+      opacity: 0;
+    }
+    40% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleY(1) translateY(14px);
+      opacity: 0;
+    }
+  }
+
+  .hero-scroll-text {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 980px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+
+    .hero-copy {
+      order: 2;
+      text-align: center;
+    }
+
+    .hero-visual {
+      order: 1;
+    }
+
+    .hero-eyebrow,
+    .hero-cta,
+    .hero-social {
+      justify-content: center;
+    }
+
+    .hero-title {
+      align-items: center;
+    }
+
+    .hero-role {
+      justify-content: center;
+    }
+
+    .hero-desc {
+      margin-inline: auto;
+    }
+
+    .hero-social-rule {
+      display: none;
+    }
+
+    .portrait-stage {
+      width: min(100%, 340px);
+    }
+
+    .hero-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hero-scroll {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hero-badge--top-left {
+      left: -2%;
+      top: 4%;
+    }
+
+    .hero-badge--bottom-right {
+      right: -2%;
+      bottom: 6%;
+    }
+
+    .hero-badge {
+      padding: 0.5rem 0.7rem;
+    }
+
+    .hero-badge-text strong {
+      font-size: 0.75rem;
+    }
+
+    .hero-cta .btn {
+      width: 100%;
+    }
+
+    .stat {
+      padding: 0.9rem 1rem;
+    }
+
+    .stat-body strong {
+      font-size: 1.05rem;
+    }
+  }
+</style>

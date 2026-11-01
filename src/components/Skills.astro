@@ -1,0 +1,169 @@
+---
+import Icon from './Icon.astro';
+import { skillGroups } from '../data/skills';
+---
+
+<section class="section section--ruled" id="skills">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">
+        <Icon name="code" size={13} />
+        03 — Expertise
+      </span>
+      <h2 class="section-title">
+        My technical <span class="grad-text">toolkit</span>
+      </h2>
+      <p class="section-subtitle">
+        The languages, frameworks and tools I reach for — plus the working
+        habits that keep a team shipping.
+      </p>
+    </div>
+
+    <div class="skill-grid">
+      {skillGroups.map((group, i) => (
+        <article
+          class="skill-card card tilt"
+          data-tilt
+          data-tilt-max="5"
+          style={`--reveal-delay:${i * 80}ms`}
+        >
+          <div class="skill-head lift-1">
+            <span class="skill-icon">
+              <Icon name={group.icon as any} size={20} />
+            </span>
+            <div class="skill-heading">
+              <h3>{group.title}</h3>
+              <p>{group.subtitle}</p>
+            </div>
+          </div>
+
+          <ul class="skill-chips lift-1">
+            {group.chips.map((chip) => (
+              <li class="chip" style={chip.color ? `--chip:${chip.color}` : undefined}>
+                <span class="chip-dot" aria-hidden="true"></span>
+                {chip.label}
+              </li>
+            ))}
+          </ul>
+
+          <span class="skill-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { reveal, tilt } from '../scripts/motion.ts';
+  reveal();
+  tilt();
+</script>
+
+<style>
+  .skill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 268px), 1fr));
+    gap: 1.2rem;
+    perspective: 1400px;
+  }
+
+  .skill-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    padding: 1.5rem;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: border-color var(--t-base) var(--ease-out);
+  }
+
+  .skill-card:hover {
+    border-color: var(--line-accent);
+  }
+
+  /* Big ghosted numeral in the corner — a printed-index feel. */
+  .skill-index {
+    position: absolute;
+    right: 0.85rem;
+    bottom: 0.1rem;
+    font-family: var(--font-mono);
+    font-size: 3.6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.032);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .skill-head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .skill-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    color: var(--primary-light);
+    background: linear-gradient(140deg, rgba(99, 102, 241, 0.22), rgba(6, 182, 212, 0.12));
+    border: 1px solid rgba(99, 102, 241, 0.24);
+    box-shadow: inset 0 1px 0 var(--glass-hi);
+  }
+
+  .skill-heading h3 {
+    font-size: 1.02rem;
+    letter-spacing: -0.02em;
+  }
+
+  .skill-heading p {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--faint);
+  }
+
+  .skill-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.36rem 0.68rem;
+    border-radius: var(--r-xs);
+    border: 1px solid var(--line-soft);
+    background: rgba(255, 255, 255, 0.028);
+    font-size: 0.79rem;
+    font-weight: 500;
+    color: var(--muted);
+    transition:
+      color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out),
+      background-color var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+  }
+
+  .chip:hover {
+    color: var(--text);
+    border-color: var(--line-hi);
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+  }
+
+  .chip-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--chip, var(--faint));
+    box-shadow: 0 0 8px var(--chip, transparent);
+    flex-shrink: 0;
+  }
+</style>

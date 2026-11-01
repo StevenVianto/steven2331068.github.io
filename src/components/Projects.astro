@@ -1,0 +1,405 @@
+---
+import Icon from './Icon.astro';
+import { projects, projectFilters } from '../data/projects';
+
+const countFor = (id: string) =>
+  id === 'all'
+    ? projects.length
+    : projects.filter((p) => p.categories.includes(id as never)).length;
+---
+
+<section class="section section--ruled" id="projects">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">
+        <Icon name="layers" size={13} />
+        02 — Selected Work
+      </span>
+      <h2 class="section-title">
+        Things I've <span class="grad-text">built</span>
+      </h2>
+      <p class="section-subtitle">
+        Mobile apps, full-stack platforms, published games and machine-learning
+        tools — each one shipped end to end.
+      </p>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filters reveal" role="tablist" aria-label="Filter projects by category">
+      {projectFilters.map((f, i) => (
+        <button
+          class:list={['filter', { 'is-active': i === 0 }]}
+          type="button"
+          role="tab"
+          data-filter={f.id}
+          aria-selected={i === 0 ? 'true' : 'false'}
+        >
+          {f.label}
+          <span class="filter-count">{countFor(f.id)}</span>
+        </button>
+      ))}
+    </div>
+
+    <!-- Grid -->
+    <div class="project-grid" id="projectGrid">
+      {projects.map((p, i) => (
+        <article
+          class="project-card tilt"
+          data-tilt
+          data-tilt-max="6"
+          data-categories={p.categories.join(' ')}
+          style={`--g1:${p.gradient[0]};--g2:${p.gradient[1]};--reveal-delay:${i * 70}ms`}
+        >
+          <div class="project-glow" aria-hidden="true"></div>
+
+          <header class="project-head lift-1">
+            <span class="project-icon">
+              <Icon name={p.icon as any} size={22} />
+            </span>
+            <span class="project-type">{p.type}</span>
+          </header>
+
+          <div class="project-body lift-1">
+            <h3 class="project-title">{p.title}</h3>
+            <p class="project-role">{p.role}</p>
+            <p class="project-desc">{p.description}</p>
+
+            <ul class="project-features">
+              {p.features.map((f) => (
+                <li>
+                  <Icon name="check" size={13} />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <footer class="project-foot lift-2">
+            <ul class="project-tags">
+              {p.tags.map((t) => <li class="tag">{t}</li>)}
+            </ul>
+
+            {p.link && (
+              <a
+                class="project-link"
+                href={p.link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {p.link.label}
+                <Icon name="arrowRight" size={15} />
+              </a>
+            )}
+          </footer>
+        </article>
+      ))}
+    </div>
+
+    <p class="project-empty" id="projectEmpty" hidden>
+      Nothing in this category yet.
+    </p>
+  </div>
+</section>
+
+<script>
+  import { reveal, tilt } from '../scripts/motion.ts';
+
+  reveal();
+  tilt();
+
+  const grid = document.getElementById('projectGrid');
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.project-card'));
+  const empty = document.getElementById('projectEmpty');
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const filter = button.dataset.filter ?? 'all';
+
+      buttons.forEach((b) => {
+        const active = b === button;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', String(active));
+      });
+
+      let shown = 0;
+
+      for (const card of cards) {
+        const categories = (card.dataset.categories ?? '').split(' ');
+        const match = filter === 'all' || categories.includes(filter);
+
+        // Animate out, then collapse the slot with `hidden` so the grid
+        // reflows once rather than on every frame.
+        card.classList.toggle('is-hiding', !match);
+        card.classList.toggle('is-shown', match);
+
+        if (match) shown++;
+
+        window.setTimeout(() => {
+          card.hidden = !match;
+        }, match ? 0 : 220);
+      }
+
+      if (empty) empty.hidden = shown !== 0;
+      grid?.setAttribute('data-filtering', filter);
+    });
+  });
+</script>
+
+<style>
+  /* --- Filters --- */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: var(--r-full);
+    border: 1px solid var(--line);
+    background: var(--glass);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition:
+      color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out),
+      background-color var(--t-fast) var(--ease-out),
+      transform var(--t-base) var(--ease-spring);
+  }
+
+  .filter:hover {
+    color: var(--text);
+    border-color: var(--line-hi);
+    transform: translateY(-2px);
+  }
+
+  .filter.is-active {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(120deg, var(--primary-deep), var(--primary) 60%, var(--cyan));
+    box-shadow: 0 10px 26px -12px var(--primary-glow);
+  }
+
+  .filter-count {
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding-inline: 5px;
+    border-radius: var(--r-full);
+    background: rgba(255, 255, 255, 0.09);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .filter.is-active .filter-count {
+    background: rgba(0, 0, 0, 0.24);
+  }
+
+  /* --- Grid --- */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 1.35rem;
+    perspective: 1400px;
+  }
+
+  .project-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+    background: linear-gradient(
+      165deg,
+      rgba(22, 30, 49, 0.86),
+      rgba(10, 13, 20, 0.92)
+    );
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    box-shadow: var(--sh-2), inset 0 1px 0 var(--glass-hi);
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition:
+      opacity 0.25s var(--ease-out),
+      border-color var(--t-base) var(--ease-out),
+      box-shadow var(--t-base) var(--ease-out);
+  }
+
+  /* The card's own tinted halo, revealed on hover. */
+  .project-glow {
+    position: absolute;
+    inset: -40% -20% auto;
+    height: 200px;
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      color-mix(in srgb, var(--g2) 42%, transparent),
+      transparent 70%
+    );
+    opacity: 0;
+    filter: blur(34px);
+    transition: opacity var(--t-slow) var(--ease-out);
+    pointer-events: none;
+  }
+
+  .project-card:hover {
+    border-color: color-mix(in srgb, var(--g2) 45%, var(--line));
+    box-shadow: var(--sh-3), inset 0 1px 0 var(--glass-hi);
+  }
+
+  .project-card:hover .project-glow {
+    opacity: 0.55;
+  }
+
+  /* Filtering states */
+  .project-card.is-hiding {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  .project-card.is-shown {
+    animation: card-in 0.42s var(--ease-out) both;
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* --- Card head --- */
+  .project-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .project-icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    color: #fff;
+    background: linear-gradient(140deg, var(--g1), var(--g2));
+    box-shadow:
+      0 10px 24px -10px color-mix(in srgb, var(--g2) 70%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  .project-type {
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--r-xs);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+
+  /* --- Card body --- */
+  .project-body {
+    flex: 1;
+  }
+
+  .project-title {
+    font-size: 1.28rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .project-role {
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+    color: color-mix(in srgb, var(--g2) 80%, var(--muted));
+    margin-bottom: 0.75rem;
+  }
+
+  .project-desc {
+    color: var(--muted);
+    font-size: 0.89rem;
+    line-height: 1.68;
+    margin-bottom: 1rem;
+  }
+
+  .project-features {
+    display: grid;
+    gap: 0.45rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .project-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.83rem;
+    color: var(--dim);
+    line-height: 1.55;
+  }
+
+  .project-features li :global(svg) {
+    flex-shrink: 0;
+    margin-top: 0.28em;
+    color: color-mix(in srgb, var(--g2) 90%, white);
+  }
+
+  /* --- Card foot --- */
+  .project-foot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--cyan-light);
+    white-space: nowrap;
+    transition: gap var(--t-fast) var(--ease-out);
+  }
+
+  .project-link:hover {
+    gap: 0.6rem;
+  }
+
+  .project-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+</style>

@@ -1,0 +1,693 @@
+/* ==========================================================================
+   STEVEN VALIANT V. — DESIGN SYSTEM
+   Theme: deep-space obsidian, indigo/cyan/violet light, layered depth.
+
+   Architecture
+   ------------
+   1. Tokens            — colour, type, space, depth, motion
+   2. Reset & base      — document defaults, focus, selection, scrollbar
+   3. Background layers — mesh, grid floor, noise, ambient orbs
+   4. Layout            — container, sections, section headers
+   5. Primitives        — buttons, tags, cards, glass surfaces
+   6. Depth system      — 3D tilt, parallax, scroll reveal
+   7. Utilities         — helpers, a11y, reduced motion
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOKENS
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* Surfaces, darkest → lightest */
+  --bg-0: #06080e;
+  --bg-1: #0a0d14;
+  --bg-2: #0f1523;
+  --bg-3: #161e31;
+
+  /* Glass surfaces */
+  --glass: rgba(17, 24, 39, 0.55);
+  --glass-strong: rgba(22, 30, 49, 0.82);
+  --glass-hi: rgba(255, 255, 255, 0.045);
+
+  /* Hairlines */
+  --line: rgba(255, 255, 255, 0.08);
+  --line-soft: rgba(255, 255, 255, 0.045);
+  --line-hi: rgba(255, 255, 255, 0.14);
+  --line-accent: rgba(99, 102, 241, 0.42);
+
+  /* Accents */
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-deep: #4338ca;
+  --cyan: #06b6d4;
+  --cyan-light: #22d3ee;
+  --violet: #a855f7;
+  --emerald: #10b981;
+  --amber: #f59e0b;
+  --rose: #f43f5e;
+
+  --primary-glow: rgba(99, 102, 241, 0.28);
+  --cyan-glow: rgba(6, 182, 212, 0.24);
+  --violet-glow: rgba(168, 85, 247, 0.22);
+
+  /* Type */
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --dim: #64748b;
+  --faint: #475569;
+
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Radii */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 30px;
+  --r-full: 9999px;
+
+  /* Spacing rhythm */
+  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+  --section-y: clamp(5rem, 11vw, 9rem);
+  --stack: clamp(1.5rem, 3vw, 2.25rem);
+
+  /* Elevation — layered so cards read as physically above the page */
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-2: 0 8px 24px -6px rgba(0, 0, 0, 0.55);
+  --sh-3: 0 22px 50px -12px rgba(0, 0, 0, 0.7);
+  --sh-4: 0 40px 90px -20px rgba(0, 0, 0, 0.8);
+  --sh-glow: 0 0 40px -8px var(--primary-glow);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --t-fast: 0.18s;
+  --t-base: 0.32s;
+  --t-slow: 0.6s;
+
+  /* Depth — how far elements float inside a tilted card */
+  --z-lift: 18px;
+  --z-float: 34px;
+  --z-high: 54px;
+
+  /* Live values written by JS */
+  --scroll-y: 0;
+  --scroll-progress: 0;
+  --tilt-rx: 0deg;
+  --tilt-ry: 0deg;
+  --tilt-mx: 50%;
+  --tilt-my: 50%;
+  --parallax: 0;
+
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET & BASE
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Offset anchor targets so the fixed header never covers a heading. */
+  scroll-padding-top: 96px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-1);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.68;
+  letter-spacing: -0.011em;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+ul {
+  list-style: none;
+}
+
+::selection {
+  background: var(--primary);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-0);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--primary-deep), var(--primary));
+  border-radius: var(--r-full);
+  border: 3px solid var(--bg-0);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-light);
+}
+
+/* --------------------------------------------------------------------------
+   3. BACKGROUND LAYERS
+   Fixed, non-interactive, behind everything. Together these create the sense
+   of a lit volume rather than a flat page.
+   -------------------------------------------------------------------------- */
+
+.bg-stack {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Deep radial wash — gives the page a centre of gravity. */
+.bg-mesh {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(46% 38% at 18% 12%, rgba(99, 102, 241, 0.22), transparent 62%),
+    radial-gradient(40% 34% at 84% 22%, rgba(6, 182, 212, 0.16), transparent 60%),
+    radial-gradient(50% 42% at 62% 88%, rgba(168, 85, 247, 0.16), transparent 64%),
+    radial-gradient(38% 30% at 8% 78%, rgba(16, 185, 129, 0.1), transparent 60%);
+  filter: blur(28px);
+}
+
+/* Perspective grid floor — receding lines read as a ground plane in 3D. */
+.bg-grid {
+  position: absolute;
+  left: 50%;
+  bottom: -34%;
+  width: 260%;
+  height: 78%;
+  transform: translateX(-50%) perspective(560px) rotateX(70deg);
+  transform-origin: 50% 100%;
+  background-image:
+    linear-gradient(rgba(129, 140, 248, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(129, 140, 248, 0.15) 1px, transparent 1px);
+  background-size: 62px 62px;
+  /* Fade the horizon out instead of ending on a hard line. */
+  -webkit-mask-image: radial-gradient(ellipse 52% 62% at 50% 100%, #000 12%, transparent 72%);
+  mask-image: radial-gradient(ellipse 52% 62% at 50% 100%, #000 12%, transparent 72%);
+  opacity: 0.7;
+}
+
+/* Fine grain — kills banding in the large gradient washes. */
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Slow-drifting light orbs. */
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.5;
+  will-change: transform;
+}
+.bg-orb--1 {
+  width: 44vw;
+  height: 44vw;
+  top: -8vw;
+  left: -10vw;
+  background: var(--primary);
+  animation: orb-drift-1 26s var(--ease-in-out) infinite alternate;
+}
+.bg-orb--2 {
+  width: 36vw;
+  height: 36vw;
+  top: 26%;
+  right: -12vw;
+  background: var(--cyan);
+  animation: orb-drift-2 32s var(--ease-in-out) infinite alternate;
+}
+.bg-orb--3 {
+  width: 30vw;
+  height: 30vw;
+  bottom: 4%;
+  left: 22%;
+  background: var(--violet);
+  animation: orb-drift-3 38s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes orb-drift-1 {
+  to {
+    transform: translate3d(8vw, 6vw, 0) scale(1.14);
+  }
+}
+@keyframes orb-drift-2 {
+  to {
+    transform: translate3d(-7vw, 9vw, 0) scale(0.88);
+  }
+}
+@keyframes orb-drift-3 {
+  to {
+    transform: translate3d(6vw, -7vw, 0) scale(1.2);
+  }
+}
+
+/* Everything the user reads sits above the background stack. */
+.page {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   3b. SCROLL PROGRESS
+   -------------------------------------------------------------------------- */
+
+.scroll-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 110;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.scroll-progress span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--primary), var(--cyan-light), var(--violet));
+  box-shadow: 0 0 14px var(--primary-glow);
+}
+
+/* --------------------------------------------------------------------------
+   4. LAYOUT
+   -------------------------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: 1220px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--section-y);
+}
+
+/* Hairline separator that fades at both ends. */
+.section--ruled::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-hi) 22%, var(--line-hi) 78%, transparent);
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.1rem;
+  max-width: 760px;
+  margin-inline: auto;
+  margin-bottom: clamp(2.75rem, 6vw, 4.5rem);
+}
+
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: var(--r-full);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary-light);
+}
+
+.section-title {
+  font-size: clamp(2rem, 4.6vw, 3.35rem);
+  font-weight: 800;
+}
+
+.section-subtitle {
+  color: var(--muted);
+  font-size: clamp(0.98rem, 1.6vw, 1.1rem);
+  max-width: 62ch;
+}
+
+/* --------------------------------------------------------------------------
+   5. PRIMITIVES
+   -------------------------------------------------------------------------- */
+
+/* --- Gradient text -------------------------------------------------------- */
+
+.grad-text {
+  background: linear-gradient(100deg, var(--primary-light), var(--cyan-light) 46%, var(--violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+
+.btn {
+  --btn-bg: var(--glass-strong);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: var(--r-full);
+  border: 1px solid var(--line);
+  background: var(--btn-bg);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  isolation: isolate;
+  overflow: hidden;
+  box-shadow: var(--sh-2), inset 0 1px 0 var(--glass-hi);
+  transition:
+    transform var(--t-base) var(--ease-spring),
+    box-shadow var(--t-base) var(--ease-out),
+    border-color var(--t-base) var(--ease-out),
+    background-color var(--t-base) var(--ease-out);
+}
+
+/* Sheen that sweeps across on hover. */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.16) 50%, transparent 70%);
+  transform: translateX(-110%);
+  transition: transform var(--t-slow) var(--ease-out);
+}
+
+.btn:hover::after {
+  transform: translateX(110%);
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  border-color: var(--line-hi);
+  box-shadow: var(--sh-3), inset 0 1px 0 var(--glass-hi);
+}
+
+.btn:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.btn-primary {
+  border-color: transparent;
+  background: linear-gradient(120deg, var(--primary-deep), var(--primary) 55%, var(--cyan));
+  color: #fff;
+  box-shadow:
+    var(--sh-2),
+    0 0 0 1px rgba(129, 140, 248, 0.35) inset,
+    0 14px 34px -12px var(--primary-glow);
+}
+
+.btn-primary:hover {
+  box-shadow:
+    var(--sh-3),
+    0 0 0 1px rgba(129, 140, 248, 0.5) inset,
+    0 20px 46px -12px var(--primary-glow);
+}
+
+.btn-secondary {
+  color: var(--text);
+}
+
+.btn-sm {
+  padding: 0.58rem 1.1rem;
+  font-size: 0.85rem;
+}
+
+.btn svg {
+  flex-shrink: 0;
+  transition: transform var(--t-base) var(--ease-spring);
+}
+
+.btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* --- Tags ----------------------------------------------------------------- */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: var(--r-xs);
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--primary-light);
+  white-space: nowrap;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.tag:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(129, 140, 248, 0.42);
+  transform: translateY(-2px);
+}
+
+/* --- Glass card ----------------------------------------------------------- */
+
+.card {
+  position: relative;
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: var(--sh-2), inset 0 1px 0 var(--glass-hi);
+}
+
+/* --------------------------------------------------------------------------
+   6. DEPTH SYSTEM
+   The 3D illusion is CSS-only. JS writes --tilt-* / --parallax custom
+   properties; CSS owns every transform, so nothing animates on the main
+   thread and `prefers-reduced-motion` can disable all of it in one place.
+   -------------------------------------------------------------------------- */
+
+/* --- 3D tilt -------------------------------------------------------------- */
+
+.tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  /* Own perspective so every card has its own vanishing point. */
+  transform: perspective(var(--tilt-perspective, 900px))
+    rotateX(var(--tilt-rx)) rotateY(var(--tilt-ry))
+    translate3d(0, var(--tilt-lift, 0px), 0);
+  transition: transform var(--t-slow) var(--ease-out);
+  will-change: transform;
+}
+
+/* While the pointer is inside, track it closely; on exit, ease back slowly. */
+.tilt.is-tilting {
+  transition: transform 90ms linear;
+}
+
+/* Specular highlight that follows the cursor across the surface. */
+.tilt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    340px circle at var(--tilt-mx) var(--tilt-my),
+    rgba(255, 255, 255, 0.13),
+    rgba(255, 255, 255, 0.04) 38%,
+    transparent 68%
+  );
+  transition: opacity var(--t-base) var(--ease-out);
+}
+
+.tilt.is-tilting::before {
+  opacity: 1;
+}
+
+/* Children lift toward the viewer inside the tilted plane. */
+.tilt .lift-1 {
+  transform: translateZ(var(--z-lift));
+}
+.tilt .lift-2 {
+  transform: translateZ(var(--z-float));
+}
+.tilt .lift-3 {
+  transform: translateZ(var(--z-high));
+}
+
+/* --- Parallax ------------------------------------------------------------- */
+
+.parallax {
+  transform: translate3d(0, calc(var(--parallax) * 1px), 0);
+  will-change: transform;
+}
+
+/* --- Scroll reveal -------------------------------------------------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 30px, 0) scale(0.985);
+  transition:
+    opacity 0.75s var(--ease-out),
+    transform 0.75s var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   7. UTILITIES
+   -------------------------------------------------------------------------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.grad-rule {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--line-hi), transparent);
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion — drop every transform, keep all content visible.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .tilt {
+    transform: none !important;
+  }
+
+  .parallax {
+    transform: none !important;
+  }
+}

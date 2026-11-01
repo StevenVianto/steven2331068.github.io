@@ -1,0 +1,372 @@
+---
+import Icon from './Icon.astro';
+import { site, navItems, socials } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="#hero" aria-label={`${site.name} — back to top`}>
+          <span class="brand-mark" aria-hidden="true">
+            <img src="/images/logo.png" alt="" width="34" height="34" loading="lazy" decoding="async" />
+          </span>
+          <span class="brand-text">
+            <strong>Steven</strong>
+            <small>Valiant V.</small>
+          </span>
+        </a>
+        <p class="footer-blurb">
+          Mobile, full-stack and game developer based in Batam City. Building
+          software that is fast, useful and pleasant to use.
+        </p>
+        <ul class="footer-socials">
+          {socials.map((s) => (
+            <li>
+              <a
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                class="footer-social"
+              >
+                <Icon name={s.icon as any} size={17} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer">
+        <h4>Navigate</h4>
+        <ul>
+          {navItems.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="footer-contact">
+        <h4>Get in touch</h4>
+        <ul>
+          <li>
+            <a href={`mailto:${site.email}`}>
+              <Icon name="mail" size={15} />
+              {site.email}
+            </a>
+          </li>
+          <li>
+            <a href={site.whatsapp} target="_blank" rel="noopener noreferrer">
+              <Icon name="phone" size={15} />
+              {site.phoneDisplay}
+            </a>
+          </li>
+          <li>
+            <span>
+              <Icon name="location" size={15} />
+              {site.location}
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© {year} Steven Valiant V. All rights reserved.</p>
+      <p class="footer-built">
+        Built with <span class="grad-text">Astro + React Three Fiber</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Floating back-to-top -->
+  <button class="to-top" id="toTop" type="button" aria-label="Back to top">
+    <Icon name="arrowUp" size={18} />
+  </button>
+
+  <!-- Shared toast, used by the copy buttons -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <Icon name="check" size={15} />
+    <span id="toastMessage">Copied to clipboard</span>
+  </div>
+</footer>
+
+<script>
+  const button = document.getElementById('toTop');
+
+  const sync = () => {
+    button?.classList.toggle('is-visible', window.scrollY > 600);
+  };
+
+  sync();
+  window.addEventListener('scroll', sync, { passive: true });
+
+  button?.addEventListener('click', () => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  });
+</script>
+
+<style>
+  .site-footer {
+    position: relative;
+    margin-top: clamp(3rem, 7vw, 5rem);
+    border-top: 1px solid var(--line);
+    background: linear-gradient(to bottom, rgba(6, 8, 14, 0.4), rgba(6, 8, 14, 0.9));
+    padding-block: clamp(2.75rem, 6vw, 4rem) 1.75rem;
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.7fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  /* --- Brand --- */
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+  }
+
+  .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    background: linear-gradient(140deg, var(--primary-deep), var(--primary) 60%, var(--cyan));
+    box-shadow: 0 8px 22px -8px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+  }
+
+  .brand-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 3px;
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+  }
+
+  .brand-text strong {
+    font-size: 0.98rem;
+    font-weight: 800;
+  }
+
+  .brand-text small {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .footer-blurb {
+    max-width: 40ch;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--dim);
+    margin-bottom: 1.35rem;
+  }
+
+  .footer-socials {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .footer-social {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--glass);
+    color: var(--muted);
+    transition:
+      color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out),
+      transform var(--t-base) var(--ease-spring);
+  }
+
+  .footer-social:hover {
+    color: #fff;
+    border-color: var(--line-accent);
+    transform: translateY(-3px);
+  }
+
+  /* --- Columns --- */
+  .footer-nav h4,
+  .footer-contact h4 {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 1rem;
+  }
+
+  .footer-nav ul,
+  .footer-contact ul {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .footer-nav a {
+    font-size: 0.87rem;
+    color: var(--muted);
+    transition:
+      color var(--t-fast) var(--ease-out),
+      padding-left var(--t-fast) var(--ease-out);
+  }
+
+  .footer-nav a:hover {
+    color: var(--text);
+    padding-left: 4px;
+  }
+
+  .footer-contact a,
+  .footer-contact span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+    transition: color var(--t-fast) var(--ease-out);
+  }
+
+  .footer-contact :global(svg) {
+    flex-shrink: 0;
+    color: var(--faint);
+  }
+
+  .footer-contact a:hover {
+    color: var(--cyan-light);
+  }
+
+  /* --- Bottom bar --- */
+  .footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line-soft);
+    font-size: 0.78rem;
+    color: var(--faint);
+  }
+
+  .footer-built {
+    font-family: var(--font-mono);
+  }
+
+  /* --- Back to top --- */
+  .to-top {
+    position: fixed;
+    right: clamp(1rem, 3vw, 2rem);
+    bottom: clamp(1rem, 3vw, 2rem);
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    border: 1px solid var(--line-hi);
+    background: var(--glass-strong);
+    color: var(--text);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--sh-3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(14px) scale(0.9);
+    transition:
+      opacity var(--t-base) var(--ease-out),
+      transform var(--t-base) var(--ease-spring),
+      visibility 0s linear var(--t-base),
+      border-color var(--t-fast) var(--ease-out);
+  }
+
+  .to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  .to-top:hover {
+    border-color: var(--line-accent);
+    box-shadow: var(--sh-3), 0 0 30px -8px var(--primary-glow);
+  }
+
+  /* --- Toast --- */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.75rem;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.1rem;
+    border-radius: var(--r-full);
+    border: 1px solid var(--line-hi);
+    background: var(--glass-strong);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: var(--sh-4);
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text);
+    /* Parked off-screen rather than display:none so the transition can run. */
+    translate: -50% 140%;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      translate var(--t-base) var(--ease-spring),
+      opacity var(--t-base) var(--ease-out);
+  }
+
+  .toast :global(svg) {
+    color: var(--emerald);
+  }
+
+  .toast.is-visible {
+    translate: -50% 0;
+    opacity: 1;
+  }
+
+  @media (max-width: 860px) {
+    .footer-top {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .footer-top {
+      grid-template-columns: 1fr;
+    }
+
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
